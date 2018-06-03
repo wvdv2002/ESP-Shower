@@ -213,8 +213,32 @@ void espuiSetup(){
   ESPUI.label("Pump:", COLOR_TURQUOISE, "0");
   ESPUI.label("showerSt:", COLOR_TURQUOISE, "0");
   ESPUI.button("flowReset", &flowReset, COLOR_PETERRIVER);
+  ESPUI.button("toggle Pump", &togglePump, COLOR_PETERRIVER);
+  ESPUI.button("toggle UV", &toggleUV, COLOR_PETERRIVER);  
   ESPUI.begin("ESP32 Control");
 }
+
+
+void togglePump(Control sender, int type){
+  switch(type){
+    case B_DOWN:
+      setPumpRelay(!relayPump); 
+    break;
+    default:
+    break;
+  }
+}
+
+void toggleUV(Control sender, int type){
+  switch(type){
+    case B_DOWN:
+      setUvRelay(!relayUV); 
+    break;
+    default:
+    break;
+  }
+}
+
 
 void flowReset(Control sender, int type){
   switch(type){
