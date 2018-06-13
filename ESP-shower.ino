@@ -10,13 +10,19 @@
 #include <ESPUI.h>
 #include "states.h"
 
+#include <ESPAsyncWebServer.h>
+#include <ESPAsyncWiFiManager.h>         //https://github.com/tzapu/WiFiManager
+
+AsyncWebServer server(80);
+DNSServer dns;
+
+const char* ssid = "Wouterap";
+const char* password = "zeltenistgeil";
+
 
 const int FLOWCOUNTERBACKUP_TIME = (3600*1000);
 const float FLOWCOUNTSTOL = 300.0;
 const float FLOWMSTOL = 200.0;
-
-const char* ssid = "EAZHuis";
-const char* password = "HommeJan54";
 
 const char RESERVED_PINS[3] = {0,2};
 const char FLOW_PIN = 14; //Flowmeter
@@ -46,12 +52,12 @@ void setup() {
   SonoffDual.setLed(1);
   Serial.println("Booted");
 //  Serial.begin(115200);
+  AsyncWiFiManager wifiManager(&server,&dns);
 
-//  WiFiManager wifiManager;
-//  wifiManager.autoConnect("SolarRoof");
-  WiFi.mode(WIFI_STA);
+  wifiManager.autoConnect("ESPShower");
+  //WiFi.mode(WIFI_STA);
   //WiFi.setHostname(ssid);  
-  WiFi.begin(ssid, password);
+  //WiFi.begin(ssid, password);
   EEPROM.get(0,flowCounter);
   if(flowCounter>2147483647){
     flowCounter = 0;
@@ -146,13 +152,16 @@ void espShowerTask(void){
         }
       break;      
       case SHOWER_TOPPRESSURE:
-        if(millis()-stTimeout>1000){
-          stTimeout = millis();
           if(enoughPressure){
+        if(millis()-stTimeout>4000){
+          stTimeout = millis();
+
             showerState = SHOWER_WAITING;
             setUvRelay(0);
             setPumpRelay(0);
           }
+        }else{
+          stTimeout = millis();
         }
       break;
       case SHOWER_WAITING:
