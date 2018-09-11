@@ -16,8 +16,8 @@
 AsyncWebServer server(80);
 DNSServer dns;
 
-const char* ssid = "Wouterap";
-const char* password = "zeltenistgeil";
+const char* ssid = "ruinelan";
+const char* password = "Lanzarote";
 
 
 const int FLOWCOUNTERBACKUP_TIME = (3600*1000);
@@ -33,6 +33,7 @@ unsigned int slowLoopTimeout = millis();
 unsigned int espuiLoopTimeout = millis();
 unsigned int lastBackupFlowCounter = millis();
 unsigned int stTimeout = millis();
+unsigned int pumpTimeout = millis();
 
 volatile unsigned int isrFlowCounter = 0;
 unsigned int flowCounter = 0;
@@ -55,6 +56,7 @@ void setup() {
   AsyncWiFiManager wifiManager(&server,&dns);
 
   wifiManager.autoConnect("ESPShower");
+  wifiManager.setTimeout(180);
   //WiFi.mode(WIFI_STA);
   //WiFi.setHostname(ssid);  
   //WiFi.begin(ssid, password);
@@ -90,6 +92,9 @@ void loop() {
     espuiTask();
     flowTask();
     espShowerTask();
+    if((relayPump || relayUV) && millis()-pumpTimeout>12*60*1000){
+      setRelays(0,0);
+    }
   }
 }
 
@@ -199,6 +204,9 @@ void setPumpRelay(bool pump){
 void setRelays(bool uv, bool pump){
   relayUV = uv;
   relayPump = pump;
+  if(pump || uv){
+    pumpTimeout = millis();
+  }
   SonoffDual.setRelays(relayUV, relayPump);
 }
 
